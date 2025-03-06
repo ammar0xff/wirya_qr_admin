@@ -3,10 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:uuid/uuid.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:path_provider/path_provider.dart'; // Add this import
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
+import 'qr_display_screen.dart';
+import 'users_management_screen.dart';
+import 'users_live_location_screen.dart';
+import 'about_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,7 +76,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         errorMessage = null;
         qrImageFile = null;
       });
-      await _generateQrImage(id);
+      await _generateQrImage(id, _nameController.text);
     } catch (e) {
       setState(() {
         errorMessage = "Failed to generate QR code: $e";
@@ -80,7 +84,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     }
   }
 
-  Future<void> _generateQrImage(String data) async {
+  Future<void> _generateQrImage(String data, String profileName) async {
     final qrValidationResult = QrValidator.validate(
       data: data,
       version: QrVersions.auto,
@@ -95,8 +99,8 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         gapless: true,
       );
       final picData = await painter.toImageData(300);
-      final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
-      final file = await File('${directory.path}/qr_code.png').create();
+      final directory = await getDownloadsDirectory(); // Get the Downloads directory
+      final file = await File('${directory!.path}/${profileName}_qr_code.png').create();
       await file.writeAsBytes(picData!.buffer.asUint8List());
 
       setState(() {
@@ -118,25 +122,77 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     }
   }
 
-  Future<void> _saveQrCode(BuildContext context) async {
-    if (qrImageFile == null) return;
-    try {
-      final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
-      final newFile = await qrImageFile!.copy('${directory.path}/saved_qr_code.png');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save QR Code: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("QR Code Generator")),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.qr_code_rounded, color: Colors.white, size: 50), // أيقونة كبيرة
+                  SizedBox(height: 10),
+                  Text(
+                    'Wirya Admin',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Manage Users & QR Codes',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.qr_code),
+              title: Text('QR Code Generator'),
+              onTap: () {
+                Navigator.pop(context); // هذا يغلق الـ Drawer حتى لو كنت بنفس الشاشة
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.people),
+              title: Text('Users Management'),
+              onTap: () {
+                Navigator.pop(context); // لإغلاق الـ Drawer قبل الانتقال
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UsersManagementScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.location_on),
+              title: Text('Users Live Location'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UsersLiveLocationScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -211,69 +267,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                   );
                 },
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class QRDisplayScreen extends StatelessWidget {
-  final String data;
-  final String name;
-
-  QRDisplayScreen({required this.data, required this.name});
-
-  Future<void> _saveQrCode(BuildContext context) async {
-    try {
-      final qrValidationResult = QrValidator.validate(
-        data: data,
-        version: QrVersions.auto,
-        errorCorrectionLevel: QrErrorCorrectLevel.L,
-      );
-      if (qrValidationResult.status == QrValidationStatus.valid) {
-        final qrCode = qrValidationResult.qrCode!;
-        final painter = QrPainter.withQr(
-          qr: qrCode,
-          color: const Color(0xFF000000),
-          emptyColor: const Color(0xFFFFFFFF),
-          gapless: true,
-        );
-        final picData = await painter.toImageData(300);
-        final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
-        final file = await File('${directory.path}/qr_code.png').create();
-        await file.writeAsBytes(picData!.buffer.asUint8List());
-
-        final newFile = await file.copy('${directory.path}/saved_qr_code.png');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save QR Code: $e')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("QR Code for $name")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            QrImageView(
-              data: data,
-              version: QrVersions.auto,
-              size: 300.0,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => _saveQrCode(context),
-              child: const Text("Save QR Code"),
             ),
           ],
         ),
