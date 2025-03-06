@@ -58,7 +58,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         errorMessage = null;
         qrImageFile = null;
       });
-      await _generateQrImage(id);
+      await _generateQrImage(id, _nameController.text);
     } catch (e) {
       setState(() {
         errorMessage = "Failed to generate QR code: $e";
@@ -66,7 +66,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     }
   }
 
-  Future<void> _generateQrImage(String data) async {
+  Future<void> _generateQrImage(String data, String profileName) async {
     final qrValidationResult = QrValidator.validate(
       data: data,
       version: QrVersions.auto,
@@ -82,7 +82,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
       );
       final picData = await painter.toImageData(300);
       final directory = await getDownloadsDirectory(); // Get the Downloads directory
-      final file = await File('${directory!.path}/qr_code.png').create();
+      final file = await File('${directory!.path}/${profileName}_qr_code.png').create();
       await file.writeAsBytes(picData!.buffer.asUint8List());
 
       setState(() {

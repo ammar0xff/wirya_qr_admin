@@ -26,10 +26,10 @@ class QRDisplayScreen extends StatelessWidget {
         );
         final picData = await painter.toImageData(300);
         final directory = await getDownloadsDirectory(); // Get the Downloads directory
-        final file = await File('${directory!.path}/qr_code.png').create();
+        final file = await File('${directory!.path}/${name}_qr_code.png').create();
         await file.writeAsBytes(picData!.buffer.asUint8List());
 
-        final newFile = await file.copy('${directory.path}/saved_qr_code.png');
+        final newFile = await file.copy('${directory.path}/saved_${name}_qr_code.png');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
         );
