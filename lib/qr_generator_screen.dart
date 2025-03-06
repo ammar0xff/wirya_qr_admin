@@ -6,6 +6,9 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'profile_edit_screen.dart';
 import 'qr_display_screen.dart'; // Import the QRDisplayScreen
+import 'users_management_screen.dart';
+import 'users_live_location_screen.dart';
+import 'about_screen.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
   @override
@@ -101,25 +104,66 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
     }
   }
 
-  Future<void> _saveQrCode(BuildContext context) async {
-    if (qrImageFile == null) return;
-    try {
-      final directory = await getDownloadsDirectory(); // Get the Downloads directory
-      final newFile = await qrImageFile!.copy('${directory!.path}/saved_qr_code.png');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save QR Code: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("QR Code Generator")),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Navigation',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.qr_code),
+              title: Text('QR Code Generator'),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.people),
+              title: Text('Users Management'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UsersManagementScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.location_on),
+              title: Text('Users Live Location'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UsersLiveLocationScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.info),
+              title: Text('About'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

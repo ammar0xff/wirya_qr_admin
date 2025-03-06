@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart'; // Ensure this import
+import 'package:flutter_map/flutter_map.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:latlong2/latlong.dart';
 
 class UsersLiveLocationScreen extends StatefulWidget {
   @override
@@ -9,7 +10,6 @@ class UsersLiveLocationScreen extends StatefulWidget {
 
 class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref("users");
-  GoogleMapController? _mapController;
   Map<String, Marker> _markers = {};
 
   @override
@@ -24,9 +24,12 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
           final lat = double.parse(location["latitude"]);
           final lng = double.parse(location["longitude"]);
           final marker = Marker(
-            markerId: MarkerId(key),
-            position: LatLng(lat, lng),
-            infoWindow: InfoWindow(title: key),
+            width: 80.0,
+            height: 80.0,
+            point: LatLng(lat, lng),
+            builder: (ctx) => Container(
+              child: Icon(Icons.location_on, color: Colors.red, size: 40),
+            ),
           );
           markers[key] = marker;
         }
@@ -41,15 +44,20 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Users Live Location")),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: LatLng(0, 0),
-          zoom: 2,
+      body: FlutterMap(
+        options: MapOptions(
+          center: LatLng(0, 0),
+          zoom: 2.0,
         ),
-        markers: _markers.values.toSet(),
-        onMapCreated: (controller) {
-          _mapController = controller;
-        },
+        children: [
+          TileLayer(
+            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            subdomains: ['a', 'b', 'c'],
+          ),
+          MarkerLayer(
+            markers: _markers.values.toList(),
+          ),
+        ],
       ),
     );
   }

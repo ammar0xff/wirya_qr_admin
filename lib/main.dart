@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart'; // Add this import
 import 'dart:io';
 import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
-import 'dashboard_screen.dart'; // Import the DashboardScreen
+import 'qr_generator_screen.dart'; // Import the QRGeneratorScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ class SupervisorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DashboardScreen(), // Set the home screen to the dashboard
+      home: QRGeneratorScreen(), // Set the home screen to the QRGeneratorScreen
     );
   }
 }
@@ -96,8 +96,8 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         gapless: true,
       );
       final picData = await painter.toImageData(300);
-      final directory = await getDownloadsDirectory(); // Get the Downloads directory
-      final file = await File('${directory!.path}/qr_code.png').create();
+      final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
+      final file = await File('${directory.path}/qr_code.png').create();
       await file.writeAsBytes(picData!.buffer.asUint8List());
 
       setState(() {
@@ -122,8 +122,8 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   Future<void> _saveQrCode(BuildContext context) async {
     if (qrImageFile == null) return;
     try {
-      final directory = await getDownloadsDirectory(); // Get the Downloads directory
-      final newFile = await qrImageFile!.copy('${directory!.path}/saved_qr_code.png');
+      final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
+      final newFile = await qrImageFile!.copy('${directory.path}/saved_qr_code.png');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
       );
@@ -242,8 +242,8 @@ class QRDisplayScreen extends StatelessWidget {
           gapless: true,
         );
         final picData = await painter.toImageData(300);
-        final directory = await getDownloadsDirectory(); // Get the Downloads directory
-        final file = await File('${directory!.path}/qr_code.png').create();
+        final directory = await getApplicationDocumentsDirectory(); // Get the application documents directory
+        final file = await File('${directory.path}/qr_code.png').create();
         await file.writeAsBytes(picData!.buffer.asUint8List());
 
         final newFile = await file.copy('${directory.path}/saved_qr_code.png');
