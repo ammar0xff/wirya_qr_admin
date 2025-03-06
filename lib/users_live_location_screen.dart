@@ -11,7 +11,7 @@ class UsersLiveLocationScreen extends StatefulWidget {
 class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref("users");
   List<Marker> _markers = [];
-  LatLng _mapCenter = LatLng(30.033, 31.233); // Default: Cairo (safer than 0,0)
+  LatLng _mapCenter = LatLng(30.033, 31.233); // Default: Cairo
 
   @override
   void initState() {
@@ -39,7 +39,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
             point: LatLng(lat, lng),
             width: 50.0,
             height: 50.0,
-            builder: (ctx) => const Icon(Icons.location_on, color: Colors.red, size: 40),
+            child: const Icon(Icons.location_on, color: Colors.red, size: 40), // استخدم child بدلاً من builder
           );
           markers.add(marker);
         }
@@ -60,15 +60,17 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       appBar: AppBar(title: const Text("Users Live Location")),
       body: FlutterMap(
         options: MapOptions(
-          center: _mapCenter,
-          zoom: 10.0, // Adjusted for better visibility
+          initialCenter: _mapCenter, // Use initialCenter instead of center
+          initialZoom: 10.0, // Use initialZoom instead of zoom
         ),
         children: [
           TileLayer(
             urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
           ),
-          MarkerLayer(markers: _markers),
+          MarkerLayer(
+            markers: _markers, // Corrected MarkerLayer usage
+          ),
         ],
       ),
     );

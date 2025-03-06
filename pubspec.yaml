@@ -5,23 +5,23 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"  # ✅ Updated Dart SDK for compatibility
 
 dependencies:
   flutter:
     sdk: flutter
-  qr_flutter: ^4.0.0
-  firebase_core: ^1.10.6
-  firebase_database: ^9.0.7
-  uuid: ^3.0.4
-  path_provider: ^2.0.11
-  flutter_map: ^3.1.0
-  latlong2: ^0.8.1
+  qr_flutter: ^4.1.0
+  firebase_core: ^3.12.1  # ✅ Updated Firebase
+  firebase_database: ^11.3.4  # ✅ Updated Firebase Database
+  uuid: ^4.2.1  # ✅ Latest UUID package
+  path_provider: ^2.1.1  # ✅ Updated
+  flutter_map: ^8.1.0  # ✅ Matches the latest API
+  latlong2: ^0.9.0  # ✅ Updated for compatibility
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0  # ✅ Updated
 
 flutter:
   uses-material-design: true
