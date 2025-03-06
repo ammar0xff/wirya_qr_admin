@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart'; // Add this import
 import 'dart:io';
 import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
+import 'dashboard_screen.dart'; // Import the DashboardScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +20,7 @@ class SupervisorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: QRGeneratorScreen(),
+      home: DashboardScreen(), // Set the home screen to the dashboard
     );
   }
 }
