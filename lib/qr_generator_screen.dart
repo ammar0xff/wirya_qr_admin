@@ -1,33 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:uuid/uuid.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
 import 'qr_display_screen.dart';
-import 'users_management_screen.dart';
-import 'users_live_location_screen.dart';
-import 'about_screen.dart';
-import 'dashboard_screen.dart'; // Import the DashboardScreen
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
-  runApp(SupervisorApp());
-}
-
-class SupervisorApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: DashboardScreen(), // Set the home screen to the DashboardScreen
-    );
-  }
-}
 
 class QRGeneratorScreen extends StatefulWidget {
   @override
@@ -127,73 +105,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("QR Code Generator")),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.qr_code_rounded, color: Colors.white, size: 50), // أيقونة كبيرة
-                  SizedBox(height: 10),
-                  Text(
-                    'Wirya Admin',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Manage Users & QR Codes',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.qr_code),
-              title: Text('QR Code Generator'),
-              onTap: () {
-                Navigator.pop(context); // هذا يغلق الـ Drawer حتى لو كنت بنفس الشاشة
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.people),
-              title: Text('Users Management'),
-              onTap: () {
-                Navigator.pop(context); // لإغلاق الـ Drawer قبل الانتقال
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UsersManagementScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.location_on),
-              title: Text('Users Live Location'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UsersLiveLocationScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text('About'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
