@@ -12,6 +12,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref("users");
   List<Marker> _markers = [];
   LatLng _mapCenter = LatLng(30.033, 31.233); // Default: Cairo
+  Map<dynamic, dynamic>? _users;
 
   @override
   void initState() {
@@ -39,7 +40,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
             point: LatLng(lat, lng),
             width: 50.0,
             height: 50.0,
-            child: const Icon(Icons.location_on, color: Colors.red, size: 40), // استخدم child بدلاً من builder
+            child: const Icon(Icons.location_on, color: Colors.red, size: 40), // Use child instead of builder
           );
           markers.add(marker);
         }
@@ -49,6 +50,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
         setState(() {
           _markers = markers;
           _mapCenter = _markers.first.point; // Center the map on the first user
+          _users = users;
         });
       }
     });
@@ -58,18 +60,40 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Users Live Location")),
-      body: FlutterMap(
-        options: MapOptions(
-          initialCenter: _mapCenter, // Use initialCenter instead of center
-          initialZoom: 10.0, // Use initialZoom instead of zoom
-        ),
+      body: Column(
         children: [
-          TileLayer(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c'],
+          Expanded(
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: _mapCenter, // Use initialCenter instead of center
+                initialZoom: 10.0, // Use initialZoom instead of zoom
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                  subdomains: ['a', 'b', 'c'],
+                ),
+                MarkerLayer(
+                  markers: _markers,
+                ),
+              ],
+            ),
           ),
-          MarkerLayer(
-            markers: _markers, // Corrected MarkerLayer usage
+          Expanded(
+            child: _users == null
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: _users!.length,
+                    itemBuilder: (context, index) {
+                      final userKey = _users!.keys.elementAt(index);
+                      final user = _users![userKey];
+                      return ListTile(
+                        title: Text(user["name"] ?? "No Name"),
+                        subtitle: Text(user["phone"] ?? "No Phone"),
+                        trailing: Icon(Icons.location_on, color: Colors.red),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
