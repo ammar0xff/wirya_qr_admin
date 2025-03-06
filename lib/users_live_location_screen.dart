@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -11,30 +12,46 @@ class UsersLiveLocationScreen extends StatefulWidget {
 class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref("users");
   List<Marker> _markers = [];
+  LatLng _mapCenter = LatLng(30.033, 31.233); // Default: Cairo (safer than 0,0)
 
   @override
   void initState() {
     super.initState();
     _usersRef.onValue.listen((event) {
+      if (event.snapshot.value == null) return; // Check if users exist
+
       final users = event.snapshot.value as Map<dynamic, dynamic>;
       final markers = <Marker>[];
+
       users.forEach((key, value) {
+        if (value["current_location"] == null) return; // Check if location exists
         final location = value["current_location"];
-        if (location["latitude"] != "" && location["longitude"] != "") {
-          final lat = double.parse(location["latitude"]);
-          final lng = double.parse(location["longitude"]);
+        
+        final lat = location["latitude"] is double
+            ? location["latitude"]
+            : double.tryParse(location["latitude"].toString());
+
+        final lng = location["longitude"] is double
+            ? location["longitude"]
+            : double.tryParse(location["longitude"].toString());
+
+        if (lat != null && lng != null) {
           final marker = Marker(
             point: LatLng(lat, lng),
-            width: 80.0,
-            height: 80.0,
-            builder: (ctx) => Icon(Icons.location_on, color: Colors.red, size: 40),
+            width: 50.0,
+            height: 50.0,
+            builder: (ctx) => const Icon(Icons.location_on, color: Colors.red, size: 40),
           );
           markers.add(marker);
         }
       });
-      setState(() {
-        _markers = markers;
-      });
+
+      if (markers.isNotEmpty) {
+        setState(() {
+          _markers = markers;
+          _mapCenter = _markers.first.point; // Center the map on the first user
+        });
+      }
     });
   }
 
@@ -44,17 +61,15 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       appBar: AppBar(title: const Text("Users Live Location")),
       body: FlutterMap(
         options: MapOptions(
-          center: LatLng(0, 0),
-          zoom: 2.0,
+          center: _mapCenter,
+          zoom: 10.0, // Adjusted for better visibility
         ),
         children: [
           TileLayer(
             urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
           ),
-          MarkerLayer(
-            markers: _markers,
-          ),
+          MarkerLayer(markers: _markers),
         ],
       ),
     );
