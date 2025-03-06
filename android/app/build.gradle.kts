@@ -36,6 +36,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    buildFeatures {
+        buildConfig = true // Enable the buildConfig feature
+    }
 }
 
 flutter {
