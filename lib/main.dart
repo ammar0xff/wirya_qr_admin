@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:uuid/uuid.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:path_provider/path_provider.dart'; // Add this import
 import 'dart:io';
 import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
@@ -95,7 +95,8 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         gapless: true,
       );
       final picData = await painter.toImageData(300);
-      final file = await File('${Directory.systemTemp.path}/qr_code.png').create();
+      final directory = await getDownloadsDirectory(); // Get the Downloads directory
+      final file = await File('${directory!.path}/qr_code.png').create();
       await file.writeAsBytes(picData!.buffer.asUint8List());
 
       setState(() {
@@ -120,9 +121,10 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   Future<void> _saveQrCode(BuildContext context) async {
     if (qrImageFile == null) return;
     try {
-      final result = await ImageGallerySaver.saveFile(qrImageFile!.path);
+      final directory = await getDownloadsDirectory(); // Get the Downloads directory
+      final newFile = await qrImageFile!.copy('${directory!.path}/saved_qr_code.png');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('QR Code saved to gallery: $result')),
+        SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -239,12 +241,13 @@ class QRDisplayScreen extends StatelessWidget {
           gapless: true,
         );
         final picData = await painter.toImageData(300);
-        final file = await File('${Directory.systemTemp.path}/qr_code.png').create();
+        final directory = await getDownloadsDirectory(); // Get the Downloads directory
+        final file = await File('${directory!.path}/qr_code.png').create();
         await file.writeAsBytes(picData!.buffer.asUint8List());
 
-        final result = await ImageGallerySaver.saveFile(file.path);
+        final newFile = await file.copy('${directory.path}/saved_qr_code.png');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('QR Code saved to gallery: $result')),
+          SnackBar(content: Text('QR Code saved to: ${newFile.path}')),
         );
       }
     } catch (e) {
