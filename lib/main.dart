@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart'; // Add this import
 import 'dart:io';
 import 'firebase_options.dart';
 import 'profile_edit_screen.dart';
+import 'qr_generator_screen.dart'; // Import the QRGeneratorScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
