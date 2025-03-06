@@ -116,25 +116,34 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
-              child: Text(
-                'Navigation',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.qr_code_rounded, color: Colors.white, size: 50), // أيقونة كبيرة
+                  SizedBox(height: 10),
+                  Text(
+                    'Wirya Admin',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Manage Users & QR Codes',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
               ),
             ),
             ListTile(
               leading: Icon(Icons.qr_code),
               title: Text('QR Code Generator'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                Navigator.pop(context); // هذا يغلق الـ Drawer حتى لو كنت بنفس الشاشة
               },
             ),
             ListTile(
               leading: Icon(Icons.people),
               title: Text('Users Management'),
               onTap: () {
+                Navigator.pop(context); // لإغلاق الـ Drawer قبل الانتقال
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => UsersManagementScreen()),
@@ -145,6 +154,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               leading: Icon(Icons.location_on),
               title: Text('Users Live Location'),
               onTap: () {
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => UsersLiveLocationScreen()),
@@ -155,6 +165,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               leading: Icon(Icons.info),
               title: Text('About'),
               onTap: () {
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => AboutScreen()),
