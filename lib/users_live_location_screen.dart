@@ -15,8 +15,6 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   LatLngBounds? _bounds;
   double _currentZoom = 10.0;
   String _mapType = 'streets';
-  String? _selectedUser;
-  bool _isTracking = false;
 
   @override
   void initState() {
@@ -82,21 +80,10 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       setState(() {
         _markers = markers;
         _bounds = bounds;
-        if (_markers.isNotEmpty && !_isTracking && _bounds != null) {
+        if (_markers.isNotEmpty && _bounds != null) {
           _mapController.move(_bounds!.center, _currentZoom); // Move to bounds center
         }
       });
-
-      if (_isTracking && _selectedUser != null) {
-        final userMarker = markers.firstWhere(
-          (marker) => marker.point == LatLng(
-            users[_selectedUser!]["current_location"]["latitude"],
-            users[_selectedUser!]["current_location"]["longitude"],
-          ),
-          orElse: () => markers.first,
-        );
-        _mapController.move(userMarker.point, 15.0); // Follow the selected user with a good zoom level
-      }
     });
   }
 
@@ -117,20 +104,6 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
     setState(() {
       _currentZoom -= 1;
       _mapController.move(_mapController.camera.center, _currentZoom); // Use camera.center
-    });
-  }
-
-  void _onUserSelected(String? userId) {
-    setState(() {
-      _selectedUser = userId;
-      _isTracking = true;
-    });
-  }
-
-  void _stopTracking() {
-    setState(() {
-      _isTracking = false;
-      _selectedUser = null;
     });
   }
 
@@ -178,31 +151,6 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
           Positioned(
             top: 10,
             left: 10,
-            child: Column(
-              children: [
-                DropdownButton<String>(
-                  value: _selectedUser,
-                  hint: Text("Select User"),
-                  items: _markers.map((marker) {
-                    final userId = marker.child.toString();
-                    return DropdownMenuItem(
-                      value: userId,
-                      child: Text(userId),
-                    );
-                  }).toList(),
-                  onChanged: _onUserSelected,
-                ),
-                if (_isTracking)
-                  ElevatedButton(
-                    onPressed: _stopTracking,
-                    child: Text("Stop Tracking"),
-                  ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 10,
-            left: 150,
             child: DropdownButton<String>(
               value: _mapType,
               items: [
