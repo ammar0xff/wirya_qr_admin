@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  qr_flutter: ^4.1.0
+  qr_flutter: ^4.0.0
   firebase_core: ^3.12.1  # ✅ Updated Firebase
   firebase_database: ^11.3.4  # ✅ Updated Firebase Database
   uuid: ^4.2.1  # ✅ Latest UUID package
@@ -22,6 +22,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0  # ✅ Updated
+  flutter_launcher_icons: ^0.9.2  # ✅ Add this package
 
 flutter:
   uses-material-design: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "lib/icon.png"  # Path to your app icon
