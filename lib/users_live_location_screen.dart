@@ -72,7 +72,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
           if (bounds == null) {
             bounds = LatLngBounds(point, point);
           } else {
-            bounds?.extend(point); // Use null-aware operator
+            bounds!.extend(point); // Use null-aware operator
           }
         }
       });
