@@ -13,7 +13,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final MapController _mapController = MapController();
   List<Marker> _markers = [];
   LatLngBounds? _bounds;
-  double _currentZoom = 10.0;
+  double _currentZoom = 30.0;
   String _mapType = 'streets';
 
   @override
@@ -80,9 +80,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       setState(() {
         _markers = markers;
         _bounds = bounds;
-        if (_markers.isNotEmpty && _bounds != null) {
-          _mapController.move(_bounds!.center, _currentZoom); // Move to bounds center
-        }
+        // Do not reset the zoom or move the map here
       });
     });
   }
