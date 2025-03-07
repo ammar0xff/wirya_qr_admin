@@ -15,8 +15,8 @@ dependencies:
   firebase_database: ^11.3.4  # ✅ Updated Firebase Database
   uuid: ^4.2.1  # ✅ Latest UUID package
   path_provider: ^2.1.1  # ✅ Updated
-  flutter_map: ^4.0.0  # ✅ Matches the latest API
-  latlong2: ^0.8.1  # ✅ Updated for compatibility
+  flutter_map: ^8.1.0  # ✅ Use this version
+  latlong2: ^0.9.1  # ✅ Updated for compatibility
 
 dev_dependencies:
   flutter_test:

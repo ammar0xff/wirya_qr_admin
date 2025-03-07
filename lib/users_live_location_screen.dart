@@ -16,46 +16,60 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   @override
   void initState() {
     super.initState();
-    _usersRef.onValue.listen((event) {
-      if (event.snapshot.value == null) return; // Check if users exist
+    _fetchLiveLocations();
+  }
 
-      final users = event.snapshot.value as Map<dynamic, dynamic>;
+  void _fetchLiveLocations() {
+    _usersRef.onValue.listen((event) {
+      if (event.snapshot.value == null) {
+        setState(() => _markers.clear());
+        return;
+      }
+
+      final users = Map<String, dynamic>.from(event.snapshot.value as Map);
       final markers = <Marker>[];
 
       users.forEach((key, value) {
-        if (value["current_location"] == null) return; // Check if location exists
+        if (value["current_location"] == null) return;
+
         final location = value["current_location"];
-        
-        final lat = location["latitude"] is double
+
+        final double? lat = location["latitude"] is double
             ? location["latitude"]
             : double.tryParse(location["latitude"].toString());
 
-        final lng = location["longitude"] is double
+        final double? lng = location["longitude"] is double
             ? location["longitude"]
             : double.tryParse(location["longitude"].toString());
 
         if (lat != null && lng != null) {
-          final marker = Marker(
-            point: LatLng(lat, lng),
-            width: 80.0,
-            height: 80.0,
-            builder: (ctx) => Column(
-              children: [
-                Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-                Text(key, style: TextStyle(color: Colors.black, fontSize: 12, backgroundColor: Colors.white)),
-              ],
+          markers.add(
+            Marker(
+              point: LatLng(lat, lng),
+              width: 80.0,
+              height: 80.0,
+              child: Column(
+                children: [
+                  Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                  Container(
+                    padding: EdgeInsets.all(2),
+                    color: Colors.white,
+                    child: Text(
+                      key,
+                      style: TextStyle(color: Colors.black, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
-          markers.add(marker);
         }
       });
 
-      if (markers.isNotEmpty) {
-        setState(() {
-          _markers = markers;
-          _mapCenter = _markers.first.point; // Center the map on the first user
-        });
-      }
+      setState(() {
+        _markers = markers;
+        if (_markers.isNotEmpty) _mapCenter = _markers.first.point;
+      });
     });
   }
 
@@ -65,8 +79,8 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       appBar: AppBar(title: const Text("Users Live Location")),
       body: FlutterMap(
         options: MapOptions(
-          center: _mapCenter,
-          zoom: 10.0,
+          initialCenter: _mapCenter, // Use `initialCenter` instead of `center`
+          initialZoom: 10.0,
         ),
         children: [
           TileLayer(
@@ -74,7 +88,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
             subdomains: ['a', 'b', 'c'],
           ),
           MarkerLayer(
-            markers: _markers,
+            markers: _markers, // No need for `.toList()` as it's already a list
           ),
         ],
       ),
