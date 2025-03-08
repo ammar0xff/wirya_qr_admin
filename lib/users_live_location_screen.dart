@@ -13,8 +13,11 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final MapController _mapController = MapController();
   List<Marker> _markers = [];
   LatLngBounds? _bounds;
-  double _currentZoom = 30.0;
+  double _currentZoom = 10.0;
   String _mapType = 'streets';
+  bool _isLoading = true;
+  bool _isUpdating = false;
+  Key _mapKey = UniqueKey();
 
   @override
   void initState() {
@@ -24,85 +27,124 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
 
   void _fetchLiveLocations() {
     _usersRef.onValue.listen((event) {
-      if (event.snapshot.value == null) {
-        setState(() => _markers.clear());
-        return;
-      }
+      try {
+        setState(() => _isUpdating = true);
 
-      final users = Map<String, dynamic>.from(event.snapshot.value as Map);
-      final markers = <Marker>[];
-      LatLngBounds? bounds;
-
-      users.forEach((key, value) {
-        if (value["current_location"] == null) return;
-
-        final location = value["current_location"];
-
-        final double? lat = location["latitude"] is double
-            ? location["latitude"]
-            : double.tryParse(location["latitude"].toString());
-
-        final double? lng = location["longitude"] is double
-            ? location["longitude"]
-            : double.tryParse(location["longitude"].toString());
-
-        if (lat != null && lng != null) {
-          final point = LatLng(lat, lng);
-          markers.add(
-            Marker(
-              point: point,
-              width: 80.0,
-              height: 80.0,
-              child: Column(
-                children: [
-                  Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-                  Container(
-                    padding: EdgeInsets.all(2),
-                    color: Colors.white,
-                    child: Text(
-                      key,
-                      style: TextStyle(color: Colors.black, fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-
-          if (bounds == null) {
-            bounds = LatLngBounds(point, point);
-          } else {
-            bounds!.extend(point); // Use null-aware operator
-          }
+        if (event.snapshot.value == null) {
+          setState(() {
+            _markers.clear();
+            _isLoading = false;
+            _isUpdating = false;
+          });
+          return;
         }
-      });
 
-      setState(() {
-        _markers = markers;
-        _bounds = bounds;
-        // Do not reset the zoom or move the map here
-      });
+        final users = Map<String, dynamic>.from(event.snapshot.value as Map);
+        final markers = <Marker>[];
+        LatLngBounds? bounds;
+
+        users.forEach((key, value) {
+          try {
+            if (value["current_location"] == null) return;
+
+            final location = value["current_location"];
+
+            final double? lat = location["latitude"] is double
+                ? location["latitude"]
+                : double.tryParse(location["latitude"].toString());
+
+            final double? lng = location["longitude"] is double
+                ? location["longitude"]
+                : double.tryParse(location["longitude"].toString());
+
+            if (lat != null && lng != null) {
+              final point = LatLng(lat, lng);
+              markers.add(
+                Marker(
+                  point: point,
+                  width: 80.0,
+                  height: 80.0,
+                  child: Column(
+                    children: [
+                      Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                      Container(
+                        padding: EdgeInsets.all(2),
+                        color: Colors.white,
+                        child: Text(
+                          key,
+                          style: TextStyle(color: Colors.black, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+
+              if (bounds == null) {
+                bounds = LatLngBounds(point, point);
+              } else {
+                bounds!.extend(point); // Fix: Modify bounds in place
+              }
+            }
+          } catch (e) {
+            print("Error parsing location for user $key: $e");
+          }
+        });
+
+        setState(() {
+          _markers = markers;
+          _bounds = bounds;
+          _isLoading = false;
+          _isUpdating = false;
+        });
+
+        if (bounds != null) {
+          _mapController.move(
+            bounds!.center,
+            _mapController.camera.zoom, // Use current zoom or adjust as needed
+          );
+        }
+      } catch (e) {
+        print("Error fetching live locations: $e");
+        setState(() {
+          _isLoading = false;
+          _isUpdating = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to fetch live locations: $e")),
+        );
+      }
     });
   }
 
   void _onMapTypeChanged(String? value) {
     setState(() {
       _mapType = value!;
+      _mapKey = UniqueKey(); // Force FlutterMap to rebuild
     });
   }
 
   void _onZoomIn() {
     setState(() {
-      _currentZoom += 1;
+      _currentZoom = (_currentZoom + 1).clamp(1.0, 18.0);
       _mapController.move(_mapController.camera.center, _currentZoom); // Use camera.center
     });
   }
 
   void _onZoomOut() {
     setState(() {
-      _currentZoom -= 1;
+      _currentZoom = (_currentZoom - 1).clamp(1.0, 18.0);
       _mapController.move(_mapController.camera.center, _currentZoom); // Use camera.center
     });
+  }
+
+  void _resetMapView() {
+    if (_bounds != null) {
+      _mapController.move(
+        _bounds!.center,
+        _mapController.camera.zoom, // Use current zoom or adjust as needed
+      );
+    }
   }
 
   @override
@@ -112,10 +154,18 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
       body: Stack(
         children: [
           FlutterMap(
+            key: _mapKey,
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: _bounds?.center ?? LatLng(30.033, 31.233), // Default to Cairo if bounds are null
+              initialCenter: _bounds?.center ?? LatLng(30.033, 31.233),
               initialZoom: _currentZoom,
+              onPositionChanged: (position, hasGesture) {
+                if (hasGesture) {
+                  setState(() {
+                    _currentZoom = position.zoom; // Sync zoom level with state
+                  });
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -129,6 +179,8 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
               ),
             ],
           ),
+          if (_isLoading)
+            Center(child: CircularProgressIndicator()),
           Positioned(
             top: 10,
             right: 10,
@@ -136,16 +188,30 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
               children: [
                 FloatingActionButton(
                   onPressed: _onZoomIn,
+                  tooltip: 'Zoom In',
                   child: Icon(Icons.zoom_in),
                 ),
                 SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: _onZoomOut,
+                  tooltip: 'Zoom Out',
                   child: Icon(Icons.zoom_out),
+                ),
+                SizedBox(height: 10),
+                FloatingActionButton(
+                  onPressed: _resetMapView,
+                  tooltip: 'Reset View',
+                  child: Icon(Icons.center_focus_strong),
                 ),
               ],
             ),
           ),
+          if (_isUpdating)
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: CircularProgressIndicator(),
+            ),
           Positioned(
             top: 10,
             left: 10,
