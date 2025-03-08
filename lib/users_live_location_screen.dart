@@ -98,12 +98,13 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
           _isUpdating = false;
         });
 
-        if (bounds != null) {
-          _mapController.move(
-            bounds!.center,
-            _mapController.camera.zoom, // Use current zoom or adjust as needed
-          );
-        }
+        // Remove this block to prevent camera updates
+        // if (bounds != null) {
+        //   _mapController.move(
+        //     bounds!.center,
+        //     _mapController.camera.zoom, // Use current zoom or adjust as needed
+        //   );
+        // }
       } catch (e) {
         print("Error fetching live locations: $e");
         setState(() {
