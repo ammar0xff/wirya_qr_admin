@@ -61,7 +61,7 @@ class _LockCheckScreenState extends State<LockCheckScreen> {
       return Scaffold(
         body: Center(
           child: Text(
-            'Locked by the developer due to uncompleted payments',
+            'Locked by the developer due to uncompleted payments\nCall: 01558695202',
             style: TextStyle(fontSize: 20, color: Colors.red),
             textAlign: TextAlign.center,
           ),
@@ -128,7 +128,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
     );
@@ -233,73 +234,6 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("QR Code Generator")),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.qr_code_rounded, color: Colors.white, size: 50), // أيقونة كبيرة
-                  SizedBox(height: 10),
-                  Text(
-                    'Wirya Admin',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Manage Users & QR Codes',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.qr_code),
-              title: Text('QR Code Generator'),
-              onTap: () {
-                Navigator.pop(context); // هذا يغلق الـ Drawer حتى لو كنت بنفس الشاشة
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.people),
-              title: Text('Users Management'),
-              onTap: () {
-                Navigator.pop(context); // لإغلاق الـ Drawer قبل الانتقال
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UsersManagementScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.location_on),
-              title: Text('Users Live Location'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UsersLiveLocationScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text('About'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
