@@ -53,7 +53,12 @@ class _TasksScreenState extends State<TasksScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              "Assigned to:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             StreamBuilder<DatabaseEvent>(
               stream: _usersRef.onValue,
               builder: (context, snapshot) {
@@ -81,23 +86,41 @@ class _TasksScreenState extends State<TasksScreen> {
                 );
               },
             ),
+            SizedBox(height: 20),
             TextField(
               controller: _taskNameController,
-              decoration: InputDecoration(labelText: "Task Name"),
+              decoration: InputDecoration(
+                labelText: "Task Name",
+                border: OutlineInputBorder(),
+              ),
             ),
+            SizedBox(height: 10),
             TextField(
               controller: _taskNumberController,
-              decoration: InputDecoration(labelText: "Task Number"),
+              decoration: InputDecoration(
+                labelText: "Task Number",
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.number,
             ),
+            SizedBox(height: 10),
             TextField(
               controller: _taskDataController,
-              decoration: InputDecoration(labelText: "Task Data"),
+              decoration: InputDecoration(
+                labelText: "Task Data",
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _addTask,
-              child: Text("Add Task"),
+            Center(
+              child: ElevatedButton(
+                onPressed: _addTask,
+                child: Text("Add Task"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
             ),
             SizedBox(height: 20),
             Expanded(
@@ -114,19 +137,22 @@ class _TasksScreenState extends State<TasksScreen> {
                   return ListView(
                     children: users.entries.map((entry) {
                       Map<dynamic, dynamic> tasks = entry.value['tasks'] ?? {};
-                      return ExpansionTile(
-                        title: Text(entry.key),
-                        children: tasks.entries.map((taskEntry) {
-                          Map<dynamic, dynamic> task = taskEntry.value;
-                          return ListTile(
-                            title: Text(task['name']),
-                            subtitle: Text("Number: ${task['number']}\nData: ${task['data']}"),
-                            trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteTask(entry.key, taskEntry.key),
-                            ),
-                          );
-                        }).toList(),
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        child: ExpansionTile(
+                          title: Text(entry.key, style: TextStyle(fontWeight: FontWeight.bold)),
+                          children: tasks.entries.map((taskEntry) {
+                            Map<dynamic, dynamic> task = taskEntry.value;
+                            return ListTile(
+                              title: Text(task['name']),
+                              subtitle: Text("Number: ${task['number']}\nData: ${task['data']}"),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteTask(entry.key, taskEntry.key),
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       );
                     }).toList(),
                   );

@@ -3,10 +3,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:uuid/uuid.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:wirya_qr_admin/profile_edit_screen.dart';
 import 'dart:io';
 
 import 'package:wirya_qr_admin/qr_display_screen.dart';
+import 'package:wirya_qr_admin/profile_edit_screen.dart';
 
 class QRGeneratorScreen extends StatefulWidget {
   @override
@@ -110,12 +110,49 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Name")),
-            TextField(controller: _locationController, decoration: const InputDecoration(labelText: "Location")),
-            TextField(controller: _phoneController, decoration: const InputDecoration(labelText: "Phone"), keyboardType: TextInputType.phone),
-            TextField(controller: _categoryController, decoration: const InputDecoration(labelText: "Category")),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: "Name",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _locationController,
+              decoration: InputDecoration(
+                labelText: "Location",
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: "Phone",
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _categoryController,
+              decoration: InputDecoration(
+                labelText: "Category",
+                border: OutlineInputBorder(),
+              ),
+            ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: generateQR, child: const Text("Generate QR Code")),
+            Center(
+              child: ElevatedButton(
+                onPressed: generateQR,
+                child: const Text("Generate QR Code"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             if (qrImageFile != null)
               Image.file(qrImageFile!),
@@ -141,39 +178,42 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                   Map<dynamic, dynamic> profiles = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
                   return ListView(
                     children: profiles.entries.map((entry) {
-                      return ListTile(
-                        title: Text(entry.value["name"] ?? "No Name"),
-                        subtitle: Text(entry.value["phone"] ?? "No Phone"),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.qr_code, color: Colors.blue),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => QRDisplayScreen(data: entry.key, name: entry.value["name"]),
-                                  ),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.green),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProfileEditScreen(profileId: entry.key, profileData: entry.value),
-                                  ),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => deleteProfile(entry.key),
-                            ),
-                          ],
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        child: ListTile(
+                          title: Text(entry.value["name"] ?? "No Name", style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(entry.value["phone"] ?? "No Phone"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.qr_code, color: Colors.blue),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => QRDisplayScreen(data: entry.key, name: entry.value["name"]),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.green),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfileEditScreen(profileId: entry.key, profileData: entry.value),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteProfile(entry.key),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }).toList(),

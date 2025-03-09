@@ -39,24 +39,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-void _showNotification(String taskName, String userId) async {
-  const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    'task_channel',
-    'Task Notifications',
-    channelDescription: 'Channel for task notifications',
-    importance: Importance.max,
-    priority: Priority.high,
-    showWhen: false,
-  );
-  const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-  await _flutterLocalNotificationsPlugin.show(
-    0, // id
-    'Task Completed', // title
-    'Task "$taskName" assigned to $userId is completed.', // body
-    platformChannelSpecifics, // notificationDetails
-    payload: 'task_completed', // payload
-  );
-}
+  void _showNotification(String taskName, String userId) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'task_channel',
+      'Task Notifications',
+      channelDescription: 'Channel for task notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: false,
+    );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+    await _flutterLocalNotificationsPlugin.show(
+      0, // id
+      'Task Completed', // title
+      'Task "$taskName" assigned to $userId is completed.', // body
+      platformChannelSpecifics, // notificationDetails
+      payload: 'task_completed', // payload
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,9 +85,12 @@ void _showNotification(String taskName, String userId) async {
                     tasks.forEach((taskId, taskData) {
                       if (taskData['done'] != true) {
                         taskWidgets.add(
-                          ListTile(
-                            title: Text(taskData['name']),
-                            subtitle: Text("User: $userId\nNumber: ${taskData['number']}\nData: ${taskData['data']}"),
+                          Card(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: ListTile(
+                              title: Text(taskData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text("User: $userId\nNumber: ${taskData['number']}\nData: ${taskData['data']}"),
+                            ),
                           ),
                         );
                       }
@@ -98,8 +102,6 @@ void _showNotification(String taskName, String userId) async {
                 },
               ),
             ),
-            // Add other monitoring information here
-            // For example, you can add a summary of the number of tasks, users, etc.
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
