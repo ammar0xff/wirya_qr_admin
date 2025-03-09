@@ -11,11 +11,12 @@ import 'qr_display_screen.dart';
 import 'users_management_screen.dart';
 import 'users_live_location_screen.dart';
 import 'about_screen.dart';
-import 'dashboard_screen.dart'; // Import the DashboardScreen
+import 'dashboard_screen.dart';
+import './screens/tasks_screen.dart'; // Import the TasksScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(SupervisorApp());
 }
 
@@ -24,7 +25,112 @@ class SupervisorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DashboardScreen(), // Set the home screen to the DashboardScreen
+      home: LockCheckScreen(),
+    );
+  }
+}
+
+class LockCheckScreen extends StatefulWidget {
+  @override
+  _LockCheckScreenState createState() => _LockCheckScreenState();
+}
+
+class _LockCheckScreenState extends State<LockCheckScreen> {
+  bool _isLocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLockStatus();
+  }
+
+  void _checkLockStatus() async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref();
+    DatabaseEvent event = await ref.once();
+    if (event.snapshot.value != null && event.snapshot.value is Map) {
+      Map<dynamic, dynamic> data = event.snapshot.value as Map<dynamic, dynamic>;
+      setState(() {
+        _isLocked = data['locked'] ?? false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLocked) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'Locked by the developer due to uncompleted payments',
+            style: TextStyle(fontSize: 20, color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    } else {
+      return MainScreen();
+    }
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+
+  static List<Widget> _widgetOptions = <Widget>[
+    DashboardScreen(),
+    UsersManagementScreen(),
+    UsersLiveLocationScreen(),
+    TasksScreen(), // Add the TasksScreen to the list of screens
+    AboutScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Wirya QR Admin'),
+      ),
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Users',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on),
+            label: 'Locations',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.task),
+            label: 'Tasks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'About',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
