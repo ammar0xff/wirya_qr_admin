@@ -17,6 +17,7 @@ dependencies:
   path_provider: ^2.1.1  # ✅ Updated
   flutter_map: ^8.1.0  # ✅ Use this version
   latlong2: ^0.9.1  # ✅ Updated for compatibility
+  flutter_local_notifications: ^18.0.1  # Add this package
 
 dev_dependencies:
   flutter_test:

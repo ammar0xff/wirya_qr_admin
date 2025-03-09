@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../models/user.dart';
 
 class TasksScreen extends StatefulWidget {
   @override
@@ -25,6 +24,7 @@ class _TasksScreenState extends State<TasksScreen> {
         "data": _taskDataController.text,
         "name": _taskNameController.text,
         "number": int.parse(_taskNumberController.text),
+        "done": false,
       };
 
       await _usersRef.child(_selectedUserId!).child('tasks').child(taskId).set(task);
