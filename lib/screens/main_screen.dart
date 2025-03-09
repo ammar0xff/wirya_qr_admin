@@ -11,29 +11,49 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late TabController _tabController;
 
   static List<Widget> _widgetOptions = <Widget>[
     DashboardScreen(),
     UsersManagementScreen(),
     UsersLiveLocationScreen(),
     TasksScreen(),
-    QRGeneratorScreen(), // Add the QRGeneratorScreen to the list of screens
+    QRGeneratorScreen(),
     AboutScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _widgetOptions.length, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _selectedIndex = _tabController.index;
+      });
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _tabController.animateTo(index);
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: TabBarView(
+        controller: _tabController,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

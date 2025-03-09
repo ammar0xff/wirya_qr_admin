@@ -13,7 +13,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final MapController _mapController = MapController();
   List<Marker> _markers = [];
   LatLngBounds? _bounds;
-  double _currentZoom = 10.0;
+  double _currentZoom = 50.0;
   String _mapType = 'streets';
   bool _isLoading = true;
   bool _isUpdating = false;

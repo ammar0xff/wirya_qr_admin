@@ -10,12 +10,15 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final DatabaseReference _usersRef = FirebaseDatabase.instance.ref().child('users');
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  bool _isLoading = false;
+  Map<dynamic, dynamic>? _usersData;
 
   @override
   void initState() {
     super.initState();
     _initializeNotifications();
     _listenForTaskCompletion();
+    _fetchData();
   }
 
   void _initializeNotifications() {
@@ -58,91 +61,121 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    DatabaseEvent event = await _usersRef.once();
+    setState(() {
+      _usersData = event.snapshot.value as Map<dynamic, dynamic>?;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _refreshData() async {
+    await _fetchData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dashboard'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: StreamBuilder<DatabaseEvent>(
-                stream: _usersRef.onValue,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-                    return Center(child: Text("No users found."));
-                  }
-                  Map<dynamic, dynamic> users = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                  List<Widget> taskWidgets = [];
-                  users.forEach((userId, userData) {
-                    Map<dynamic, dynamic> tasks = userData['tasks'] ?? {};
-                    tasks.forEach((taskId, taskData) {
-                      if (taskData['done'] != true) {
-                        taskWidgets.add(
-                          Card(
-                            margin: EdgeInsets.symmetric(vertical: 10),
-                            child: ListTile(
-                              title: Text(taskData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text("User: $userId\nNumber: ${taskData['number']}\nData: ${taskData['data']}"),
-                            ),
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: _isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : _usersData == null
+                        ? Center(child: Text("No users found."))
+                        : ListView(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Undone Tasks',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              ..._buildTaskWidgets(false),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Done Tasks',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              ..._buildTaskWidgets(true),
+                            ],
                           ),
-                        );
-                      }
-                    });
-                  });
-                  return ListView(
-                    children: taskWidgets,
-                  );
-                },
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Monitoring Information',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Monitoring Information',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            StreamBuilder<DatabaseEvent>(
-              stream: _usersRef.onValue,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-                  return Center(child: Text("No data found."));
-                }
-                Map<dynamic, dynamic> users = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                int totalTasks = 0;
-                int undoneTasks = 0;
-                users.forEach((userId, userData) {
-                  Map<dynamic, dynamic> tasks = userData['tasks'] ?? {};
-                  totalTasks += tasks.length;
-                  tasks.forEach((taskId, taskData) {
-                    if (taskData['done'] != true) {
-                      undoneTasks++;
-                    }
-                  });
-                });
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Total Users: ${users.length}"),
-                    Text("Total Tasks: $totalTasks"),
-                    Text("Undone Tasks: $undoneTasks"),
-                  ],
-                );
-              },
-            ),
-          ],
+              _buildMonitoringInformation(),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  List<Widget> _buildTaskWidgets(bool done) {
+    List<Widget> taskWidgets = [];
+    _usersData?.forEach((userId, userData) {
+      Map<dynamic, dynamic> tasks = userData['tasks'] ?? {};
+      tasks.forEach((taskId, taskData) {
+        if (taskData['done'] == done) {
+          taskWidgets.add(
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              child: ListTile(
+                title: Text(taskData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text("User: $userId\nNumber: ${taskData['number']}\nData: ${taskData['data']}"),
+                trailing: done ? Icon(Icons.check_circle, color: Colors.green) : null,
+              ),
+            ),
+          );
+        }
+      });
+    });
+    return taskWidgets;
+  }
+
+  Widget _buildMonitoringInformation() {
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+    if (_usersData == null) {
+      return Center(child: Text("No data found."));
+    }
+    int totalTasks = 0;
+    int undoneTasks = 0;
+    _usersData?.forEach((userId, userData) {
+      Map<dynamic, dynamic> tasks = userData['tasks'] ?? {};
+      totalTasks += tasks.length;
+      tasks.forEach((taskId, taskData) {
+        if (taskData['done'] != true) {
+          undoneTasks++;
+        }
+      });
+    });
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Total Users: ${_usersData?.length ?? 0}"),
+        Text("Total Tasks: $totalTasks"),
+        Text("Undone Tasks: $undoneTasks"),
+      ],
     );
   }
 }
