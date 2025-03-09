@@ -44,87 +44,28 @@ class _TasksScreenState extends State<TasksScreen> {
     }
   }
 
+  Future<void> _refreshData() async {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Tasks Management'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Assigned to:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            StreamBuilder<DatabaseEvent>(
-              stream: _usersRef.onValue,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-                  return Center(child: Text("No users found."));
-                }
-                Map<dynamic, dynamic> users = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                return DropdownButton<String>(
-                  hint: Text("Select User"),
-                  value: _selectedUserId,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedUserId = newValue;
-                    });
-                  },
-                  items: users.keys.map<DropdownMenuItem<String>>((dynamic key) {
-                    return DropdownMenuItem<String>(
-                      value: key,
-                      child: Text(key),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _taskNameController,
-              decoration: InputDecoration(
-                labelText: "Task Name",
-                border: OutlineInputBorder(),
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Assigned to:",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _taskNumberController,
-              decoration: InputDecoration(
-                labelText: "Task Number",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _taskDataController,
-              decoration: InputDecoration(
-                labelText: "Task Data",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: _addTask,
-                child: Text("Add Task"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: StreamBuilder<DatabaseEvent>(
+              StreamBuilder<DatabaseEvent>(
                 stream: _usersRef.onValue,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -134,32 +75,98 @@ class _TasksScreenState extends State<TasksScreen> {
                     return Center(child: Text("No users found."));
                   }
                   Map<dynamic, dynamic> users = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                  return ListView(
-                    children: users.entries.map((entry) {
-                      Map<dynamic, dynamic> tasks = entry.value['tasks'] ?? {};
-                      return Card(
-                        margin: EdgeInsets.symmetric(vertical: 10),
-                        child: ExpansionTile(
-                          title: Text(entry.key, style: TextStyle(fontWeight: FontWeight.bold)),
-                          children: tasks.entries.map((taskEntry) {
-                            Map<dynamic, dynamic> task = taskEntry.value;
-                            return ListTile(
-                              title: Text(task['name']),
-                              subtitle: Text("Number: ${task['number']}\nData: ${task['data']}"),
-                              trailing: IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteTask(entry.key, taskEntry.key),
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                  return DropdownButton<String>(
+                    hint: Text("Select User"),
+                    value: _selectedUserId,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedUserId = newValue;
+                      });
+                    },
+                    items: users.keys.map<DropdownMenuItem<String>>((dynamic key) {
+                      return DropdownMenuItem<String>(
+                        value: key,
+                        child: Text(key),
                       );
                     }).toList(),
                   );
                 },
               ),
-            ),
-          ],
+              SizedBox(height: 20),
+              TextField(
+                controller: _taskNameController,
+                decoration: InputDecoration(
+                  labelText: "Task Name",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _taskNumberController,
+                decoration: InputDecoration(
+                  labelText: "Task Number",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _taskDataController,
+                decoration: InputDecoration(
+                  labelText: "Task Data",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _addTask,
+                  child: Text("Add Task"),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    textStyle: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: StreamBuilder<DatabaseEvent>(
+                  stream: _usersRef.onValue,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                      return Center(child: Text("No users found."));
+                    }
+                    Map<dynamic, dynamic> users = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                    List<Widget> taskWidgets = [];
+                    users.forEach((userId, userData) {
+                      Map<dynamic, dynamic> tasks = userData['tasks'] ?? {};
+                      tasks.forEach((taskId, taskData) {
+                        taskWidgets.add(
+                          Card(
+                            margin: EdgeInsets.symmetric(vertical: 10),
+                            child: ListTile(
+                              title: Text(taskData['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text("User: $userId\nNumber: ${taskData['number']}\nData: ${taskData['data']}"),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteTask(userId, taskId),
+                              ),
+                            ),
+                          ),
+                        );
+                      });
+                    });
+                    return ListView(
+                      children: taskWidgets,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
