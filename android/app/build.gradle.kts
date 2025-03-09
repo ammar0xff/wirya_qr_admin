@@ -48,5 +48,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5") // Add this dependency
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2") // Update to the required version
 }
