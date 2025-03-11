@@ -13,7 +13,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
   final MapController _mapController = MapController();
   List<Marker> _markers = [];
   LatLngBounds? _bounds;
-  double _currentZoom = 15.0;
+  double _currentZoom = 20.0;
   String _mapType = 'streets';
   bool _isLoading = true;
   bool _isUpdating = false;
@@ -158,7 +158,7 @@ class _UsersLiveLocationScreenState extends State<UsersLiveLocationScreen> {
             key: _mapKey,
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: _bounds?.center ?? LatLng(30.033, 31.233),
+              initialCenter: _bounds?.center ?? LatLng(31.418071, 31.814335), // Default location
               initialZoom: _currentZoom,
               onPositionChanged: (position, hasGesture) {
                 if (hasGesture) {
