@@ -78,8 +78,12 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
         gapless: true,
       );
       final picData = await painter.toImageData(300);
-      final directory = await getDownloadsDirectory(); // Get the Downloads directory
-      final file = await File('${directory!.path}/${profileName}_qr_code.png').create();
+      final directory = await getExternalStorageDirectory(); // Get the external storage directory
+      final downloadsDirectory = Directory('${directory!.path}/Download'); // Use the Download folder
+      if (!downloadsDirectory.existsSync()) {
+        downloadsDirectory.createSync();
+      }
+      final file = await File('${downloadsDirectory.path}/${profileName}_qr_code.png').create();
       await file.writeAsBytes(picData!.buffer.asUint8List());
 
       setState(() {
